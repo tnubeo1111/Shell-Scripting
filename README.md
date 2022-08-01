@@ -393,7 +393,7 @@ Command substitution
 One of the most useful features of shell scripts is the ability to extract information from the output of a command and assign it to a variable. After you assign the output to a variable, you can use that value anywhere in your script. This comes in handy when processing data in your scripts.
 
 There are two ways to assign the output of a command to a variable:
- ■ The backtick character (`)
+ ■ The backtick character ()
  ■ The $() format
  
 Be careful with the backtick character; it is not the normal single quotation mark
@@ -453,7 +453,7 @@ The script assigns the value to a variable, which is then used as part of a fi l
 
 The log fi le appears in the directory using the value of the $today variable as part of the fi lename. The contents of the log fi le are the directory listing from the /usr/bin directory. If the script runs the next day, the log fi lename is log.140201, thus creating a new fi le for the new day.
 
-Redirecting Input and Output
+## Redirecting Input and Output
 
 Sometimes, you want to save the output from a command instead of just having it displayed on the monitor. The bash shell provides a few different operators that allow you to
 redirect the output of a command to an alternative location (such as a fi le). Redirection can be used for input as well as output, redirecting a fi le to a command for input. This section describes what you need to do to use redirection in your shell scripts.
@@ -494,7 +494,7 @@ $
 The test6 fi le still contains the original data from the who command processed earlier —
 and now it contains the new output from the date command.
 
-Input redirection
+## Input redirection
 
 Input redirection is the opposite of output redirection. Instead of taking the output of acommand and redirecting it to a fi le, input redirection takes the content of a fi le and redirects it to a command.
 
@@ -541,7 +541,7 @@ The secondary prompt continues to prompt for more data until you enter the strin
 for the text marker. The wc command performs the line, word, and byte counts of the data
 supplied by the inline input redirection.
 
-Pipes
+## Pipes
 
 Sometimes, you need to send the output of one command to the input of another command.
 This is possible using redirection, but somewhat clunky:
@@ -645,12 +645,12 @@ Using the more command with the ls command
 
 The ls -l command produces a long listing of all the fi les in the directory. For directories with lots of fi les, this can be quite a listing. By piping the output to the more command, you force the output to stop at the end of every screen of data.
 
-Performing Math
+## Performing Math
 
 Another feature crucial to any programming language is the ability to manipulate numbers.
 Unfortunately, for shell scripts this process is a bit awkward. There are two different ways to perform mathematical operations in your shell scripts.
 
-The expr command
+## The expr command
 
 Originally, the Bourne shell provided a special command that was used for processing mathematical equations. The expr command allowed the processing of equations from the command line, but it is extremely clunky:
 
@@ -701,7 +701,7 @@ $
 Fortunately, the bash shell has an improvement for processing mathematical operators as
 you shall see in the next section.
 
-Using brackets
+## Using brackets
 
 The bash shell includes the expr command to stay compatible with the Bourne shell; however, it also provides a much easier way of performing mathematical equations. In bash, when assigning a mathematical value to a variable, you can enclose the mathematical equation using a dollar sign and square brackets ($[ operation ]): 
 
@@ -759,11 +759,11 @@ The bash shell mathematical operators support only integer arithmetic. This is a
 --> NOTE
 The z shell (zsh) provides full fl oating-point arithmetic operations. If you require fl oating-point calculations in your shell scripts, you might consider checking out the z shell (discussed in Chapter 23).
 
-A fl oating-point solution
+A floating-point solution
 
 You can use several solutions for overcoming the bash integer limitation. The most popular solution uses the built-in bash calculator, called bc.
 
-The basics of bc
+## The basics of bc
 
 The bash calculator is actually a programming language that allows you to enter fl oatingpoint expressions at a command line and then interprets the expressions, calculates them, and returns the result. The bash calculator recognizes these:
  ■ Numbers (both integer and fl oating point)
@@ -820,7 +820,7 @@ $
 
 After a variable value is defined, you can use the variable throughout the bash calculator session. The print statement allows you to print variables and numbers.
 
-Using bc in scripts
+## Using bc in scripts
 
 Now you may be wondering how the bash calculator is going to help you with fl oating-point arithmetic in your shell scripts. Do you remember command substitution? Yes, you can use
 
@@ -918,14 +918,14 @@ to indicate the command to assign to the variable.
 
 You’ll also notice in this example that you can assign variables within the bash calculator. It’s important to remember that any variables created within the bash calculator are valid only within the bash calculator and can’t be used in the shell script.
 
-Exiting the Script
+## Exiting the Script
 
 So far in our sample scripts, we terminated things pretty abruptly. When we were fi nished with our last command, we just ended the script. There’s a more elegant way of completing things available to us.
 
 Every command that runs in the shell uses an exit status to indicate to the shell that
 it’s fi nished processing. The exit status is an integer value between 0 and 255 that’s passed by the command to the shell when the command fi nishes running. You can capture this value and use it in your scripts.
 
-Checking the exit status
+## Checking the exit status
 
 Linux provides the $? special variable that holds the exit status value from the last command that executed. You must view or use the $? variable immediately after the command
 you want to check. It changes values to the exit status of the last command executed by
@@ -960,8 +960,7 @@ $ echo $?
 126
 $
 
-Another common error you’ll encounter occurs if you supply an invalid parameter to a
-command:
+Another common error you’ll encounter occurs if you supply an invalid parameter to a command:
 
 $ date %t
 date: invalid date '%t'
@@ -971,7 +970,7 @@ $
 
 This generates the general exit status code of 1, indicating that an unknown error occurred in the command.
 
-The exit command
+## The exit command
 
 By default, your shell script exits with the exit status of the last command in your script:
 
@@ -1048,7 +1047,7 @@ The exit status code is reduced to fi t in the 0 to 255 range. The shell does th
 In Chapter 12, you’ll see how you can use the if-then statement to check the error status
 returned by a command to see whether the command was successful.
 
-Summary
+## Summary
 
 The bash shell script allows you to string commands together into a script. The most basic way to create a script is to separate multiple commands on the command line using a semicolon. The shell executes each command in order, displaying the output of each command on the monitor.
 
