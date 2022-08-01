@@ -78,7 +78,7 @@ After indicating the shell, commands are entered onto each line of the fi le, fo
 carriage return. As mentioned, comments can be added by using the pound sign. An example looks like this:
 
 #!/bin/bash
-# This script displays the date and who's logged on
+#This script displays the date and who's logged on
 date
 who
 
