@@ -110,9 +110,9 @@ $ echo $PATH
 :/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/user/bin $
 
 The PATH environment variable is set to look for commands only in a handful of directories. To get the shell to fi nd the test1 script, we need to do one of two things:
- ■ Add the directory where our shell script fi le is located to the PATH environment
+■ Add the directory where our shell script fi le is located to the PATH environment
 variable.
- ■ Use an absolute or relative fi le path to reference our shell script fi le in the prompt.
+■ Use an absolute or relative fi le path to reference our shell script fi le in the prompt.
 
 --> TIP
 Some Linux distributions add the $HOME/bin directory to the PATH environment variable. This creates a place in
@@ -323,11 +323,97 @@ User variables can be any text string of up to 20 letters, digits, or an undersc
 variables are case sensitive, so the variable Var1 is different from the variable var1. This little
 rule often gets novice script programmers in trouble.
 
+Values are assigned to user variables using an equal sign. No spaces can appear between the variable, the equal sign, and the value (another trouble spot for novices). Here are a few examples of assigning values to user variables:
+
+var1=10
+var2=-57
+var3=testing
+var4="still more testing"
+
+The shell script automatically determines the data type used for the variable value.
+Variables defi ned within the shell script maintain their values throughout the life of the shell script but are deleted when the shell script completes.
+
+Just like system variables, user variables can be referenced using the dollar sign:
+
+$ cat test3
+#!/bin/bash
+# testing variables
+days=10
+guest="Katie"
+echo "$guest checked in $days days ago"
+days=5
+guest="Jessica"
+echo "$guest checked in $days days ago"
+$
+
+Running the script produces the following output:
+
+$ chmod u+x test3
+$ ./test3
+Katie checked in 10 days ago
+Jessica checked in 5 days ago
+$
+
+Each time the variable is referenced, it produces the value currently assigned to it.It’s
+important to remember that when referencing a variable value you use the dollar sign, but
+when referencing the variable to assign a value to it, you do not use the dollar sign. Here’s an example of what I mean:
+
+$ cat test4
+#!/bin/bash
+# assigning a variable value to another variable
+
+value1=10
+value2=$value1
+echo The resulting value is $value2
+$
+
+When you use the value of the value1 variable in the assignment statement, you must still
+use the dollar sign. This code produces the following output:
+
+$ chmod u+x test4
+$ ./test4
+The resulting value is 10
+$
+
+If you forget the dollar sign and make the value2 assignment line look like this:
+
+value2=value1
+
+you get the following output:
+
+$ ./test4
+The resulting value is value1
+$
+
+Without the dollar sign, the shell interprets the variable name as a normal text string,
+which is most likely not what you wanted.
+
+Command substitution
+
+One of the most useful features of shell scripts is the ability to extract information from the output of a command and assign it to a variable. After you assign the output to a variable, you can use that value anywhere in your script. This comes in handy when processing data in your scripts.
+
+There are two ways to assign the output of a command to a variable:
+ ■ The backtick character (`)
+ ■ The $() format
+ 
+Be careful with the backtick character; it is not the normal single quotation mark
+character you are used to using for strings. Because it is not used very often outside
+of shell scripts, you may not even know where to fi nd it on your keyboard. You should
+become familiar with it because it’s a crucial component of many shell scripts. Hint: On a U.S. keyboard, it is usually on the same key as the tilde symbol (~).
+
+Command substitution allows you to assign the output of a shell command to a variable.
+Although this doesn’t seem like much, it is a major building block in script programming.
+
+You must either surround the entire command line command with two backtick characters:
+
+testing='date'
+
+or use the $() format:
+
+testing=$(date)
 
 
-
-
-
+![Uploading image.png…]()
 
 
 
