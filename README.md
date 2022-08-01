@@ -412,192 +412,654 @@ or use the $() format:
 
 testing=$(date)
 
+The shell runs the command within the command substitution characters and assigns the
+output to the variable testing. Notice that there are no spaces between the assignment
+equal sign and the command substitution character. Here’s an example of creating a variable using the output from a normal shell command:
 
-![Uploading image.png…]()
+$ cat test5
+#!/bin/bash
+testing=$(date)
+echo "The date and time are: " $testing
+$
 
+The variable testing receives the output from the date command, and it is used in the
+echo statement to display it. Running the shell script produces the following output:
 
+$ chmod u+x test5
+$ ./test5
+The date and time are: Mon Jan 31 20:23:25 EDT 2014
+$
 
+That’s not all that exciting in this example (you could just as easily just put the command in the echo statement), but after you capture the command output in a variable, you can do anything with it.
 
+Here’s a popular example of how command substitution is used to capture the current date
+and use it to create a unique fi lename in a script:
 
+#!/bin/bash
+# copy the /usr/bin directory listing to a log file
+today=$(date +%y%m%d)
+ls /usr/bin -al > log.$today
 
+The today variable is assigned the output of a formatted date command. This is a common technique used to extract date information for log fi lenames. The +%y%m%d format
+instructs the date command to display the date as a two-digit year, month, and day:
 
+$ date +%y%m%d
+140131
+$
 
+The script assigns the value to a variable, which is then used as part of a fi lename. The fi le itself contains the redirected output (discussed in the “Redirecting Input and Output” section) of a directory listing. After running the script, you should see a new fi le in your directory:
 
+-rw-r--r-- 1 user user 769 Jan 31 10:15 log.140131
 
+The log fi le appears in the directory using the value of the $today variable as part of the fi lename. The contents of the log fi le are the directory listing from the /usr/bin directory. If the script runs the next day, the log fi lename is log.140201, thus creating a new fi le for the new day.
 
+Redirecting Input and Output
 
+Sometimes, you want to save the output from a command instead of just having it displayed on the monitor. The bash shell provides a few different operators that allow you to
+redirect the output of a command to an alternative location (such as a fi le). Redirection can be used for input as well as output, redirecting a fi le to a command for input. This section describes what you need to do to use redirection in your shell scripts.
 
+Output redirection
 
+The most basic type of redirection is sending output from a command to a fi le. The bash
+shell uses the greater-than symbol (>) for this:
 
+command > outputfile
 
+Anything that would appear on the monitor from the command instead is stored in the output fi le specifi ed:
 
+$ date > test6
+$ ls -l test6
+-rw-r--r-- 1 user user 29 Feb 10 17:56 test6
+$ cat test6
+Thu Feb 10 17:56:58 EDT 2014
+$
 
+The redirect operator created the fi le test6 (using the default umask settings) and redirected the output from the date command to the test6 fi le. If the output fi le already exists, the redirect operator overwrites the existing fi le with the new fi le data:
 
+$ who > test6
+$ cat test6
+user pts/0 Feb 10 17:55
+$
 
+Now the contents of the test6 fi le contain the output from the who command.
 
+Sometimes, instead of overwriting the fi le’s contents, you may need to append output from a command to an existing fi le — for example, if you’re creating a log fi le to document an action on the system. In this situation, you can use the double greater-than symbol (>>) to append data:
 
+$ date >> test6
+$ cat test6
+user    pts/0   Feb 10 17:55
+Thu Feb 10 18:02:14 EDT 2014
+$
 
+The test6 fi le still contains the original data from the who command processed earlier —
+and now it contains the new output from the date command.
 
+Input redirection
 
+Input redirection is the opposite of output redirection. Instead of taking the output of acommand and redirecting it to a fi le, input redirection takes the content of a fi le and redirects it to a command.
 
+The input redirection symbol is the less-than symbol (<):
 
+command < inputfile
 
+The easy way to remember this is that the command is always listed fi rst in the command
+line, and the redirection symbol “points” to the way the data is fl owing. The less-than
+symbol indicates that the data is fl owing from the input fi le to the command.
+Here’s an example of using input redirection with the wc command:
 
+$ wc < test6
+ 2 11 60
+$
 
+The wc command provides a count of text in the data. By default, it produces three values:
+ ■ The number of lines in the text
+ ■ The number of words in the text
+ ■ The number of bytes in the text
+ 
+By redirecting a text fi le to the wc command, you can get a quick count of the lines, words, and bytes in the fi le. The example shows that there are 2 lines, 11 words, and 60 bytes in the test6 fi le.
+
+Another method of input redirection is called inline input redirection. This method allows you to specify the data for input redirection on the command line instead of in a fi le. This may seem somewhat odd at fi rst, but a few applications are available for this process (such as those shown in the “Performing Math” section).
+
+The inline input redirection symbol is the double less-than symbol (<<). Besides this symbol, you must specify a text marker that delineates the beginning and end of the data used for input. You can use any string value for the text marker, but it must be the same at the beginning of the data and the end of the data:
+
+command << marker
+data
+marker
+
+When using inline input redirection on the command line, the shell prompts for data using
+the secondary prompt, defi ned in the PS2 environment variable (see Chapter 6). Here’s how this looks when you use it:
+
+$ wc << EOF
+> test string 1
+> test string 2
+> test string 3
+> EOF
+        3       9       42
+$
+
+The secondary prompt continues to prompt for more data until you enter the string value
+for the text marker. The wc command performs the line, word, and byte counts of the data
+supplied by the inline input redirection.
+
+Pipes
+
+Sometimes, you need to send the output of one command to the input of another command.
+This is possible using redirection, but somewhat clunky:
+
+$ rpm -qa > rpm.list
+$ sort < rpm.list
+abrt-1.1.14-1.fc14.i686
+abrt-addon-ccpp-1.1.14-1.fc14.i686
+abrt-addon-kerneloops-1.1.14-1.fc14.i686
+abrt-addon-python-1.1.14-1.fc14.i686
+abrt-desktop-1.1.14-1.fc14.i686
+abrt-gui-1.1.14-1.fc14.i686
+abrt-libs-1.1.14-1.fc14.i686
+abrt-plugin-bugzilla-1.1.14-1.fc14.i686
+abrt-plugin-logger-1.1.14-1.fc14.i686
+abrt-plugin-runapp-1.1.14-1.fc14.i686
+acl-2.2.49-8.fc14.i686
+[...]
 
+The rpm command manages the software packages installed on systems using the Red Hat
+Package Management system (RPM), such as the Fedora system as shown. When used with
+the -qa parameters, it produces a list of the existing packages installed, but not necessarily in any specifi c order. If you’re looking for a specifi c package or group of packages, it can be diffi cult to fi nd it using the output of the rpm command.
 
+Using the standard output redirection, the output was redirected from the rpm command
+to a fi le, called rpm.list. After the command fi nished, the rpm.list fi le contained a list of all the installed software packages on my system. Next, input redirection was used to send the contents of the rpm.list fi le to the sort command to sort the package names alphabetically.
 
+That was useful, but again, a somewhat clunky way of producing the information. Instead
+of redirecting the output of a command to a fi le, you can redirect the output to another
+command. This process is called piping.
 
+Like the command substitution backtick, the symbol for piping is not used often outside of shell scripting. The symbol is two vertical lines, one above the other. However, the pipe
+symbol often looks like a single vertical line in print (|). On a U.S. keyboard, it is usually on the same key as the backslash (\). The pipe is put between the commands to redirect
+the output from one to the other:
 
+command1 | command2
 
+Don’t think of piping as running two commands back to back. The Linux system actually
+runs both commands at the same time, linking them together internally in the system. As
+the fi rst command produces output, it’s sent immediately to the second command. No intermediate fi les or buffer areas are used to transfer the data.
 
+Now, using piping you can easily pipe the output of the rpm command directly to the
+sort command to produce your results:
 
+$ rpm -qa | sort
+abrt-1.1.14-1.fc14.i686
+abrt-addon-ccpp-1.1.14-1.fc14.i686
+abrt-addon-kerneloops-1.1.14-1.fc14.i686
+abrt-addon-python-1.1.14-1.fc14.i686
+abrt-desktop-1.1.14-1.fc14.i686
+abrt-gui-1.1.14-1.fc14.i686
+abrt-libs-1.1.14-1.fc14.i686
+abrt-plugin-bugzilla-1.1.14-1.fc14.i686
+abrt-plugin-logger-1.1.14-1.fc14.i686
+abrt-plugin-runapp-1.1.14-1.fc14.i686
+acl-2.2.49-8.fc14.i686
+[...]
 
+Unless you’re a (very) quick reader, you probably couldn’t keep up with the output generated by this command. Because the piping feature operates in real time, as soon as the rpm command produces data, the sort command gets busy sorting it. By the time the rpm command fi nishes outputting data, the sort command already has the data sorted and starts displaying it on the monitor.
 
+There’s no limit to the number of pipes you can use in a command. You can continue piping the output of commands to other commands to refi ne your operation.
 
+In this case, because the output of the sort command zooms by so quickly, you can use
+one of the text paging commands (such as less or more) to force the output to stop at
+every screen of data:
 
+$ rpm -qa | sort | more
 
+This command sequence runs the rpm command, pipes the output to the sort command,
+and then pipes that output to the more command to display the data, stopping after
+every screen of information. This now lets you pause and read what’s on the display before continuing, as shown in Figure 11-1.
 
+FIGURE 11-1
+Using piping to send data to the more command
 
+![image](https://user-images.githubusercontent.com/93989574/182161724-58acd672-e922-4c63-bdcf-f4c54de334f0.png)
 
+To get even fancier, you can use redirection along with piping to save your output to a fi le:
 
+$ rpm -qa | sort > rpm.list
+$ more rpm.list
+abrt-1.1.14-1.fc14.i686
+abrt-addon-ccpp-1.1.14-1.fc14.i686
+abrt-addon-kerneloops-1.1.14-1.fc14.i686
+abrt-addon-python-1.1.14-1.fc14.i686
+abrt-desktop-1.1.14-1.fc14.i686
+abrt-gui-1.1.14-1.fc14.i686
+abrt-libs-1.1.14-1.fc14.i686
+abrt-plugin-bugzilla-1.1.14-1.fc14.i686
+abrt-plugin-logger-1.1.14-1.fc14.i686
+abrt-plugin-runapp-1.1.14-1.fc14.i686
+acl-2.2.49-8.fc14.i686
+[...]
+
+As expected, the data in the rpm.list fi le is now sorted!
 
+By far one of the most popular uses of piping is piping the results of commands that produce long output to the more command. This is especially common with the ls command, as shown in Figure 11-2.
 
+FIGURE 11-2
+Using the more command with the ls command
+![image](https://user-images.githubusercontent.com/93989574/182161979-501b9bf3-5cb8-4ef5-9c69-1dceb39007ea.png)
 
+The ls -l command produces a long listing of all the fi les in the directory. For directories with lots of fi les, this can be quite a listing. By piping the output to the more command, you force the output to stop at the end of every screen of data.
 
+Performing Math
+
+Another feature crucial to any programming language is the ability to manipulate numbers.
+Unfortunately, for shell scripts this process is a bit awkward. There are two different ways to perform mathematical operations in your shell scripts.
 
+The expr command
 
+Originally, the Bourne shell provided a special command that was used for processing mathematical equations. The expr command allowed the processing of equations from the command line, but it is extremely clunky:
+
+$ expr 1 + 5
+6
 
+The expr command recognizes a few different mathematical and string operators, shown in
+Table 11-1.
 
+TABLE 11-1 The expr Command Operators
+![image](https://user-images.githubusercontent.com/93989574/182162305-2f2bd138-cbf0-4203-b9c9-7862bdc15821.png)
 
+TABLE 11-1 (continued)
+![image](https://user-images.githubusercontent.com/93989574/182162415-7c42e261-cdf8-46a3-8a06-9f77d8a315b6.png)
 
+Although the standard operators work fi ne in the expr command, the problem occurs when
+using them from a script or the command line. Many of the expr command operators have
+other meanings in the shell (such as the asterisk). Using them in the expr command produces odd results:
 
+$ expr 5 * 2
+expr: syntax error
+$
 
+To solve this problem, you need to use the shell escape character (the backslash) to identify any characters that may be misinterpreted by the shell before being passed to the expr command:
 
+$ expr 5 \* 2
+10
+$
 
+Now that’s really starting to get ugly! Using the expr command in a shell script is equally cumbersome:
+
+$ cat test6
+#!/bin/bash
+# An example of using the expr command
+var1=10
+var2=20
+var3=$(expr $var2 / $var1)
+echo The result is $var3
+
+To assign the result of a mathematical equation to a variable, you have to use command
+substitution to extract the output from the expr command:
+
+$ chmod u+x test6
+$ ./test6
+The result is 2
+$
+
+Fortunately, the bash shell has an improvement for processing mathematical operators as
+you shall see in the next section.
+
+Using brackets
+
+The bash shell includes the expr command to stay compatible with the Bourne shell; however, it also provides a much easier way of performing mathematical equations. In bash, when assigning a mathematical value to a variable, you can enclose the mathematical equation using a dollar sign and square brackets ($[ operation ]): 
+
+$ var1=$[1 + 5]
+$ echo $var1
+6
+$ var2=$[$var1 * 2]
+$ echo $var2
+12
+$
+
+Using brackets makes shell math much easier than with the expr command. This same
+technique also works in shell scripts:
+
+$ cat test7
+#!/bin/bash
+var1=100
+var2=50
+var3=45
+var4=$[$var1 * ($var2 - $var3)]
+echo The final result is $var4
+$
+
+Running this script produces the output:
+
+$ chmod u+x test7
+$ ./test7
+The final result is 500
+$
 
+Also, notice that when using the square brackets method for calculating equations, you
+don’t need to worry about the multiplication symbol, or any other characters, being misinterpreted by the shell. The shell knows that it’s not a wildcard character because it is within the square brackets.
+
+There’s one major limitation to performing math in the bash shell script. Look at this
+example:
+
+$ cat test8
+#!/bin/bash
+var1=100
+
+var2=45
+var3=$[$var1 / $var2]
+echo The final result is $var3
+$
 
+Now run it and see what happens:
 
+$ chmod u+x test8
+$ ./test8
+The final result is 2
+$
+
+The bash shell mathematical operators support only integer arithmetic. This is a huge limitation if you’re trying to do any sort of real-world mathematical calculations. 
 
+--> NOTE
+The z shell (zsh) provides full fl oating-point arithmetic operations. If you require fl oating-point calculations in your shell scripts, you might consider checking out the z shell (discussed in Chapter 23).
+
+A fl oating-point solution
 
+You can use several solutions for overcoming the bash integer limitation. The most popular solution uses the built-in bash calculator, called bc.
 
+The basics of bc
 
+The bash calculator is actually a programming language that allows you to enter fl oatingpoint expressions at a command line and then interprets the expressions, calculates them, and returns the result. The bash calculator recognizes these:
+ ■ Numbers (both integer and fl oating point)
+ ■ Variables (both simple variables and arrays)
+ ■ Comments (lines starting with a pound sign or the C language /* */ pair)
+ ■ Expressions
+ ■ Programming statements (such as if-then statements)
+ ■ Functions
+ 
+You can access the bash calculator from the shell prompt using the bc command:
+
+$ bc
+bc 1.06.95
+Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type 'warranty'.
+12 * 5.4
+64.8
+3.156 * (3 + 5)
+25.248
+quit
+$
+
+The example starts out by entering the expression 12 * 5.4. The bash calculator returns
+the answer. Each subsequent expression entered into the calculator is evaluated, and the
+result is displayed. To exit the bash calculator, you must enter quit.
+
+The floating-point arithmetic is controlled by a built-in variable called scale. You must set this value to the desired number of decimal places you want in your answers, or you won’t get what you were looking for:
 
+$ bc -q
+3.44 / 5
+0
+scale=4
+3.44 / 5
+.6880
+quit
+$
+
+The default value for the scale variable is zero. Before the scale value is set, the bash
+calculator provides the answer to zero decimal places. After you set the scale variable
+value to four, the bash calculator displays the answer to four decimal places. The -q command line parameter suppresses the lengthy welcome banner from the bash calculator.
+
+In addition to normal numbers, the bash calculator also understands variables:
+
+$ bc -q
+var1=10
+var1 * 4
+40
+var2 = var1 / 5
+print var2
+2
+quit
+$
+
+After a variable value is defined, you can use the variable throughout the bash calculator session. The print statement allows you to print variables and numbers.
+
+Using bc in scripts
+
+Now you may be wondering how the bash calculator is going to help you with fl oating-point arithmetic in your shell scripts. Do you remember command substitution? Yes, you can use
 
+the command substitution character to run a bc command and assign the output to a variable! The basic format to use is this:
 
+variable=$(echo "options; expression" | bc)
 
+The fi rst portion, options, allows you to set variables. If you need to set more than one variable, separate them using the semicolon. The expression parameter defi nes the mathematical expression to evaluate using bc. Here’s a quick example of doing this in a script:
 
+$ cat test9
+#!/bin/bash
+var1=$(echo "scale=4; 3.44 / 5" | bc)
+echo The answer is $var1
+$
 
+This example sets the scale variable to four decimal places and then specifi es a specific calculation for the expression. Running this script produces the following output:
 
+$ chmod u+x test9
+$ ./test9
+The answer is .6880
+$
 
+Now that’s fancy! You aren’t limited to just using numbers for the expression value. You can also use variables defi ned in the shell script:
 
+$ cat test10
+#!/bin/bash
+var1=100
+var2=45
+var3=$(echo "scale=4; $var1 / $var2" | bc)
+echo The answer for this is $var3
+$
 
+The script defi nes two variables, which are used within the expression sent to the bc command. Remember to use the dollar sign to signify the value for the variables and not the variables themselves. The output of this script is as follows:
 
+$ ./test10
+The answer for this is 2.2222
+$
 
+And of course, after a value is assigned to a variable, that variable can be used in yet
+another calculation:
 
+$ cat test11
+#!/bin/bash
+var1=20
+var2=3.14159
+var3=$(echo "scale=4; $var1 * $var1" | bc)
+var4=$(echo "scale=4; $var3 * $var2" | bc)
+echo The final result is $var4
+$
 
+This method works fi ne for short calculations, but sometimes you need to get more involved with your numbers. If you have more than just a couple of calculations, it gets confusing trying to list multiple expressions on the same command line.
 
+There’s a solution to this problem. The bc command recognizes input redirection, allowing
+you to redirect a fi le to the bc command for processing. However, this also can get confusing, because you’d need to store your expressions in a fi le.
 
+The best method is to use inline input redirection, which allows you to redirect data
+directly from the command line. In the shell script, you assign the output to a variable:
 
+variable=$(bc << EOF
+options
+statements
+expressions
+EOF
+)
 
+The EOF text string indicates the beginning and end of the inline redirection data.
+Remember that the command substitution characters are still needed to assign the output
+of the bc command to the variable.
 
+Now you can place all the individual bash calculator elements on separate lines in the script file. Here’s an example of using this technique in a script:
 
+$ cat test12
+#!/bin/bash
 
+var1=10.46
+var2=43.67
+var3=33.2
+var4=71
 
+var5=$(bc << EOF
+scale = 4
+a1 = ( $var1 * $var2)
+b1 = ($var3 * $var4)
+a1 + b1
+EOF
+)
 
+echo The final answer for this mess is $var5
+$
+
+Placing each option and expression on a separate line in your script makes things cleaner
+and easier to read and follow. The EOF string indicates the start and end of the data to
+redirect to the bc command. Of course, you must use the command substitution characters
+to indicate the command to assign to the variable.
+
+You’ll also notice in this example that you can assign variables within the bash calculator. It’s important to remember that any variables created within the bash calculator are valid only within the bash calculator and can’t be used in the shell script.
+
+Exiting the Script
+
+So far in our sample scripts, we terminated things pretty abruptly. When we were fi nished with our last command, we just ended the script. There’s a more elegant way of completing things available to us.
+
+Every command that runs in the shell uses an exit status to indicate to the shell that
+it’s fi nished processing. The exit status is an integer value between 0 and 255 that’s passed by the command to the shell when the command fi nishes running. You can capture this value and use it in your scripts.
+
+Checking the exit status
+
+Linux provides the $? special variable that holds the exit status value from the last command that executed. You must view or use the $? variable immediately after the command
+you want to check. It changes values to the exit status of the last command executed by
+the shell:
+
+$ date
+Sat Jan 15 10:01:30 EDT 2014
+$ echo $?
+0
+$
+
+By convention, the exit status of a command that successfully completes is zero. If a command completes with an error, then a positive integer value is placed in the exit status:
+
+$ asdfg
+-bash: asdfg: command not found
+$ echo $?
+127
+$
+
+The invalid command returns an exit status of 127. There’s not much of a standard
+convention to Linux error exit status codes. However, you can use the guidelines shown in
+Table 11-2.
+
+TABLE 11-2 Linux Exit Status Codes
+![image](https://user-images.githubusercontent.com/93989574/182165777-7c7ce2b4-4aff-497d-898d-8932b9da475a.png)
+
+An exit status value of 126 indicates that the user didn’t have the proper permissions set to execute the command:
+
+$ ./myprog.c
+-bash: ./myprog.c: Permission denied
+$ echo $?
+126
+$
 
+Another common error you’ll encounter occurs if you supply an invalid parameter to a
+command:
 
+$ date %t
+date: invalid date '%t'
+$ echo $?
+1
+$
 
+This generates the general exit status code of 1, indicating that an unknown error occurred in the command.
 
+The exit command
 
+By default, your shell script exits with the exit status of the last command in your script:
 
+$ ./test6
+The result is 2
+$ echo $?
+0
+$
 
+You can change that to return your own exit status code. The exit command allows you to
+specify an exit status when your script ends:
 
+$ cat test13
+#!/bin/bash
+# testing the exit status
+var1=10
+var2=30
+var3=$[$var1 + $var2]
+echo The answer is $var3
+exit 5
+$
 
+When you check the exit status of the script, you get the value used as the parameter of
+the exit command:
 
+$ chmod u+x test13
+$ ./test13
+The answer is 40
+$ echo $?
+5
+$
 
+You can also use variables in the exit command parameter:
 
+$ cat test14
+#!/bin/bash
+# testing the exit status
+var1=10
+var2=30
+var3=$[$var1 + $var2]
+exit $var3
+$
 
+When you run this command, it produces the following exit status:
 
+$ chmod u+x test14
+$ ./test14
+$ echo $?
+40
+$
 
+You should be careful with this feature, however, because the exit status codes can only go up to 255. Watch what happens in this example:
 
+$ cat test14b
+#!/bin/bash
+# testing the exit status
+var1=10
+var2=30
+var3=$[$var1 * $var2]
+echo The value is $var3
+exit $var3
+$
 
+Now when you run it, you get the following:
 
+$ ./test14b
+The value is 300
+$ echo $?
+44
+$
 
+The exit status code is reduced to fi t in the 0 to 255 range. The shell does this by using modulo arithmetic. The modulo of a value is the remainder after a division. The resulting number is the remainder of the specifi ed number divided by 256. In the case of 300 (the result value), the remainder is 44, which is what appears as the exit status code.
 
+In Chapter 12, you’ll see how you can use the if-then statement to check the error status
+returned by a command to see whether the command was successful.
 
+Summary
 
+The bash shell script allows you to string commands together into a script. The most basic way to create a script is to separate multiple commands on the command line using a semicolon. The shell executes each command in order, displaying the output of each command on the monitor.
 
+You can also create a shell script fi le, placing multiple commands in the fi le for the shell to execute in order. The shell script fi le must defi ne the shell used to run the script. This is done in the fi rst line of the script fi le, using the #! symbol, followed by the full path of the shell.
 
+Within the shell script you can reference environment variable values by using a dollar sign in front of the variable. You can also defi ne your own variables for use within the script, and assign values and even the output of a command by using the backtick character or the
+$() format. The variable value can be used within the script by placing a dollar sign in front of the variable name.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The bash shell allows you to redirect both the input and output of a command from the
+standard behavior. You can redirect the output of any command from the monitor display
+to a fi le by using the greater-than symbol, followed by the name of the fi le to capture the output. You can append output data to an existing fi le by using two greater-than symbols.
 
 
 
