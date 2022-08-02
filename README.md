@@ -34,7 +34,8 @@ these basic concepts before you can start writing your own shell script masterpi
 
 ## Using Multiple Commands
 
-So far you’ve seen how to use the command line interface (CLI) prompt of the shell to enter commands and view the command results. The key to shell scripts is the ability to enter multiple
+So far you’ve seen how to use the command line interface (CLI) prompt of the shell to enter commands and view the command results. 
+The key to shell scripts is the ability to enter multiple
 commands and process the results from each command, even possibly passing the results of one
 command to another. The shell allows you to chain commands together into a single step.
 
