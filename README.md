@@ -40,7 +40,7 @@ commands and process the results from each command, even possibly passing the re
 command to another. The shell allows you to chain commands together into a single step.
 
 If you want to run two commands together, you can enter them on the same prompt line, separated
-with a semicolon:
+with a semicolon: (# Nếu bạn muốn chạy 2 dòng lệnh với nhau, bạn có thể nhập chúng trên cùng 1 dòng lệnh tách biệt bởi dấu ; )
 
 $ date ; who
 Mon Feb 21 15:36:09 EST 2014
@@ -55,7 +55,7 @@ by the output of the who command, showing who is currently logged on to the syst
 Using this technique, you can string together as many commands as you wish, up to the
 maximum command line character count of 255 characters.
 
-Using this technique is fi ne for small scripts, but it has a major drawback: You must enter
+Using this technique is fine for small scripts, but it has a major drawback: You must enter
 the entire command at the command prompt every time you want to run it. Instead of having to manually enter the commands onto a command line, you can combine the commands
 into a simple text fi le. When you need to run the commands, just simply run the text fi le.
 
